@@ -1,13 +1,18 @@
 const canvas = document.createElement('canvas');
-const ctx    = canvas.getContext("2d");
+const canvasArea = document.createElement('div');
+canvasArea.classList.add('canvas-area')
+const ctx = canvas.getContext("2d");
 
-const CAMERA_WIDTH = window.innerWidth; // Initial camera width  (units of our camera space)
+const CAMERA_WIDTH = 1080; // Initial camera width  (units of our camera space)
+const ASPECT_RATIO = 1080/1920;
+const ASSET_URL    = 'http://localhost:3000/assets';
 let startingTime = 0;
 const timeBox = createTimeBox();
 
 const gfxContext = {
-    clearColor: '#fff'
+    clearColor: '#b96a6a'
 };
+
 
 const frameBufferSize = [
     1024,
@@ -20,10 +25,15 @@ canvas.width  = frameBufferSize[0];
 canvas.height = frameBufferSize[1];
 
 window.addEventListener('resize', () => {
-    camera.resize(window.innerWidth, window.innerWidth / window.innerHeight);
+    resizeCanvasArea();
+    // camera.resize(window.innerWidth, window.innerWidth / window.innerHeight);
 });
 
-const camera = new Camera(0, 0, CAMERA_WIDTH, window.innerWidth/window.innerHeight);
+const camera = new Camera(
+    0, 0, 
+    CAMERA_WIDTH, 
+    ASPECT_RATIO
+);
 
 function draw(obj) {
     const [cX, cY]   = worldToCamera(camera, obj.transform.posX, obj.transform.posY);
@@ -32,25 +42,25 @@ function draw(obj) {
     ctx.save();
     ctx.translate(vPx, vPy);
     ctx.scale(viewport[0]/(camera.width/camera.zoom), viewport[1]/(camera.height/camera.zoom));
+    ctx.scale(obj.transform.scaleX, obj.transform.scaleY);
+    
     obj.draw();
     ctx.restore();
 }
 
-const c        = generateCircle(20);
+const pot   = CreateObject(Sprite, LoadTexture(`${ASSET_URL}/esteregg.png`));
+pot.scale(2);
 
 const duration = 4;
 
 function update(t) {
-    c.transform.posX = (.5*camera.width*camera.transform.scaleX)*t/duration;
+    pot.transform.posX = (.5*camera.width*camera.transform.scaleX)*t/duration;
     delta        = t - startingTime;
 
-    const [cX, cY] = worldToCamera(camera, c.transform.posX, c.transform.posY);
+    const [cX, cY] = worldToCamera(camera, pot.transform.posX, pot.transform.posY);
     
-    if (Math.abs(cX) > (camera.width * (1-camera.anchorX))) {
-        camera.wX = c.transform.posX;
-    }
-
-
+    if (Math.abs(cX) > (camera.width * (1 - camera.anchorX)))
+        camera.wX = pot.transform.posX;
 
     timeBox.setDelta(delta);
 
@@ -63,7 +73,7 @@ function loop(t) {
     const timeSec = t/1000;
 
     update(timeSec);
-    draw(c);
+    draw(pot);
 
     timeBox.setTime(timeSec);
     timeBox.setDelta(delta);
@@ -75,7 +85,15 @@ function loop(t) {
 requestAnimationFrame(loop);
 
 
-document.body.appendChild(canvas);
+canvasArea.appendChild(canvas);
+
+function resizeCanvasArea() {
+    canvasArea.style.height = '100%';
+    canvasArea.style.width  = ASPECT_RATIO * window.innerHeight + 'px';    
+}
+
+resizeCanvasArea();
+document.body.appendChild(canvasArea);
 
 
 function clear() {

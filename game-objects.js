@@ -85,3 +85,70 @@ function generateCircle(radius) {
 function genPlane(width, height) {  
     return new Plane(width, height);
 }
+
+function GameObject() {
+    this.transform = new Transform(new Vec2(0, 0));
+
+    this.anchorX = Engine.GOBJECT_DEFAULT_ANCHOR_X;
+    this.anchorY = Engine.GOBJECT_DEFAULT_ANCHOR_Y;
+    this.width   = Engine.GOBJECT_DEFAULT_WIDTH;
+    this.height  = Engine.GOBJECT_DEFAULT_HEIGHT;
+}
+
+GameObject.prototype = {
+    setAnchor(x, y) {
+        this.anchorX = x;
+        this.anchorY = y;
+    },
+
+    scale(x) {
+        this.transform.scaleX = x;
+        this.transform.scaleY = x;
+    },
+
+    setSize(w, h) {
+        this.width  = w;
+        this.height = h;
+    }
+}
+
+function Sprite(texture, s) {
+    GameObject.call(this);
+
+    this.setAnchor(Engine.SPRITE_DEFAULT_ANCHOR_X, Engine.SPRITE_DEFAULT_ANCHOR_Y);
+    this.setSize(Engine.SPRITE_ASSETLOADING_WIDTH, Engine.SPRITE_ASSETLOADING_HEIGHT);
+
+    this.texture = texture;
+    this.texture.onLoad(this);
+}
+
+Sprite.prototype = Object.create(GameObject.prototype);
+
+Sprite.prototype.draw = function() {
+    if (this.texture.loaded) {
+        ctx.drawImage(this.texture.image, -this.width * this.anchorX, -this.height * this.anchorY);
+    } else {
+        if (Engine.SPRITE_SHOW_LOADING_ASSET) {
+            ctx.save();
+            ctx.fillStyle   = Engine.SPRITE_LOADING_COLOR;
+            ctx.globalAlpha = .5; 
+            ctx.fillRect(-this.width * this.anchorX, -this.height * this.anchorY, this.width, this.height);
+            ctx.restore();
+        }
+    }
+}
+
+Sprite.prototype.onTextureLoaded = function(texture) {
+    if (texture.loaded) {
+        this.width  = texture.width;
+        this.height = texture.height;
+    }
+}
+
+function CreateObject(objType) {
+    return new objType(args_second(...arguments));
+}
+
+function args_second(a, b) {
+    return b;
+}
