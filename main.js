@@ -51,10 +51,10 @@ function draw(obj) {
 const pot   = CreateObject(Sprite, LoadTexture(`${ASSET_URL}/esteregg.png`));
 pot.scale(2);
 
-const duration = 4;
+const duration = 1;
 
 function update(t) {
-    pot.transform.posX = (.5*camera.width*camera.transform.scaleX)*t/duration;
+    // pot.transform.posX = (.5*camera.width*camera.transform.scaleX)*t/duration;
     delta        = t - startingTime;
 
     const [cX, cY] = worldToCamera(camera, pot.transform.posX, pot.transform.posY);
@@ -94,7 +94,6 @@ function resizeCanvasArea() {
 
 resizeCanvasArea();
 document.body.appendChild(canvasArea);
-
 
 function clear() {
     ctx.save();
